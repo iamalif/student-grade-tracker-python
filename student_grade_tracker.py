@@ -26,8 +26,8 @@ Save/load all data to/from CSV
 
 Two CSV files:
 
-students.csv — stores student records
-grades.csv — stores grade records
+students_db.csv — stores student records
+grades_db.csv — stores grade records
 """
 
 # Imports
@@ -38,44 +38,50 @@ import csv
 # Classes
 
 class Student:
+    """Represents a student with a unique auto-incremented ID and a name."""
+
+    # Shared counter across all instances to generate sequential student IDs
     counter = 0
 
     def __init__(self, name):
         Student.counter += 1
-        self.__student_id = Student.counter
+        self.__student_id = Student.counter  # Unique ID assigned at creation
         self.__name = name
 
     def get_student_id(self):
         return self.__student_id
-    
+
     def get_name(self):
         return self.__name
-    
+
     def set_name(self, name):
         self.__name = name
-    
+
     def __str__(self):
         return f"Student ID: {self.__student_id}, Name: {self.__name}"
 
 class Grade:
+    """Represents a grade record linking a student, a subject, and a numeric score."""
+
+    # Shared counter across all instances to generate sequential grade IDs
     counter = 0
 
     def __init__(self, student_id, subject, grade):
         Grade.counter += 1
-        self.__grade_id = Grade.counter
-        self.__student_id = student_id
+        self.__grade_id = Grade.counter  # Unique ID assigned at creation
+        self.__student_id = student_id   # Foreign key linking to a Student
         self.__subject = subject
-        self.__grade = grade
+        self.__grade = grade             # Numeric score (float)
 
     def get_grade_id(self):
         return self.__grade_id
-    
+
     def get_student_id(self):
         return self.__student_id
-    
+
     def get_subject(self):
         return self.__subject
-    
+
     def get_grade(self):
         return self.__grade
 
@@ -84,7 +90,7 @@ class Grade:
 
     def set_grade(self, grade):
         self.__grade = grade
-    
+
     def __str__(self):
         return f"Grade ID: {self.__grade_id}, Student ID: {self.__student_id}, Subject: {self.__subject}, Grade: {self.__grade}"
     
@@ -95,23 +101,30 @@ students = []
 grades = []
 
 def add_student():
+    """Prompt for a name, create a Student, append it to the list, and persist to CSV."""
     name = get_non_empty_string("Please enter student name: ")
     student = Student(name)
     students.append(student)
     save_student_to_csv()
 
 def add_grade():
+    """Prompt for a student ID, subject, and score, then record and persist the grade.
+
+    Validates that the student exists before accepting subject/grade input.
+    """
     student_id = get_positive_int("Please enter student ID: ")
+    # Ensure the referenced student actually exists before recording a grade
     if not any(student.get_student_id() == student_id for student in students):
         print("Student not found.")
         return
     subject = get_non_empty_string("Please enter subject: ")
-    grade = get_positive_float("Please enter grade: ")
+    grade = get_non_negative_float("Please enter grade: ")
     new_grade = Grade(student_id, subject, grade)
     grades.append(new_grade)
     save_grades_to_csv()
 
 def list_students():
+    """Print all students, or a notice if none exist."""
     if len(students) == 0:
         print("No student records available.")
     else:
@@ -119,8 +132,10 @@ def list_students():
             print(student)
 
 def list_grades():
+    """Print all grade records for a specific student ID."""
     student_id = get_positive_int("Please enter student ID: ")
-    student_grades = [grade  for grade in grades if grade.get_student_id() == student_id]
+    # Filter grades to only those belonging to the requested student
+    student_grades = [grade for grade in grades if grade.get_student_id() == student_id]
     if len(student_grades) == 0:
         print("No grades available for this student.")
     else:
@@ -128,28 +143,33 @@ def list_grades():
             print(grade)
 
 def average_grade():
+    """Calculate and print the mean grade across all subjects for a student."""
     student_id = get_positive_int("Please enter student ID: ")
     student_grades = [grade for grade in grades if grade.get_student_id() == student_id]
     if len(student_grades) == 0:
         print("No grades available for this student.")
     else:
-        average = sum(grade.get_grade() for grade in student_grades)/len(student_grades)
+        average = sum(grade.get_grade() for grade in student_grades) / len(student_grades)
         print(average)
 
 def class_average():
+    """Calculate and print the mean grade across all students for a given subject."""
     subject = get_non_empty_string("Please enter subject: ")
+    # Filter grades to only those for the requested subject
     subject_grades = [grade for grade in grades if grade.get_subject() == subject]
     if len(subject_grades) == 0:
         print("No grades available for this subject.")
     else:
-        average = sum(grade.get_grade() for grade in subject_grades)/len(subject_grades)
+        average = sum(grade.get_grade() for grade in subject_grades) / len(subject_grades)
         print(average)
 
 def delete_student():
+    """Remove a student and all their associated grades, then persist both lists to CSV."""
     student_id = get_positive_int("Please enter student ID: ")
     for student in students:
         if student.get_student_id() == student_id:
             students.remove(student)
+            # In-place removal of all grades tied to the deleted student
             grades[:] = [grade for grade in grades if grade.get_student_id() != student_id]
             save_student_to_csv()
             save_grades_to_csv()
@@ -198,35 +218,38 @@ def user_menu():
 # CSV functions
 
 def save_student_to_csv():
-        # Overwrite the CSV file with the current state of all expenses
-        # newline="" prevents csv.writer from adding extra blank lines on Windows
-        with open("students_db.csv", "w", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow(["Student ID", "Name"])  # Header row
-            for student in students:
-                writer.writerow([
-                    student.get_student_id(),
-                    student.get_name()
-                ])
+    """Overwrite students_db.csv with the current state of all student records."""
+    # newline="" prevents csv.writer from adding extra blank lines on Windows
+    with open("students_db.csv", "w", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow(["Student ID", "Name"])  # Header row
+        for student in students:
+            writer.writerow([
+                student.get_student_id(),
+                student.get_name()
+            ])
 
 def load_student_from_csv():
-        try:
-            with open("students_db.csv", "r") as file:
-                # DictReader maps each row to a dict using the header row as keys
-                reader = csv.DictReader(file)
-                for row in reader:
-                    # Set the class counter to one below the saved ID so that
-                    # __init__'s increment restores the exact original ID
-                    Student.counter = int(row["Student ID"]) - 1
-                    student = Student(row["Name"])
-                    students.append(student)
-        except FileNotFoundError:
-            pass  # No CSV file yet — normal on first run, just start with an empty list
+    """Read students_db.csv and reconstruct the students list, preserving original IDs."""
+    try:
+        with open("students_db.csv", "r") as file:
+            # DictReader maps each row to a dict using the header row as keys
+            reader = csv.DictReader(file)
+            for row in reader:
+                # Set the class counter to one below the saved ID so that
+                # __init__'s increment restores the exact original ID
+                Student.counter = int(row["Student ID"]) - 1
+                student = Student(row["Name"])
+                students.append(student)
+    except FileNotFoundError:
+        pass  # No CSV file yet — normal on first run, just start with an empty list
 
 def save_grades_to_csv():
+    """Overwrite grades_db.csv with the current state of all grade records."""
+    # newline="" prevents csv.writer from adding extra blank lines on Windows
     with open("grades_db.csv", "w", newline="") as file:
         writer = csv.writer(file)
-        writer.writerow(["Grade ID", "Student ID", "Subject", "Grade"])
+        writer.writerow(["Grade ID", "Student ID", "Subject", "Grade"])  # Header row
         for grade in grades:
             writer.writerow([
                 grade.get_grade_id(),
@@ -236,18 +259,23 @@ def save_grades_to_csv():
             ])
 
 def load_grades_from_csv():
+    """Read grades_db.csv and reconstruct the grades list, preserving original IDs."""
     try:
         with open("grades_db.csv", "r") as file:
+            # DictReader maps each row to a dict using the header row as keys
             reader = csv.DictReader(file)
             for row in reader:
+                # Set the counter to one below the saved ID so that
+                # __init__'s increment restores the exact original ID
                 Grade.counter = int(row["Grade ID"]) - 1
                 grade = Grade(int(row["Student ID"]), row["Subject"], float(row["Grade"]))
                 grades.append(grade)
     except FileNotFoundError:
-        pass
+        pass  # No CSV file yet — normal on first run, just start with an empty list
 
 
 def main():
+    """Entry point: load persisted data from CSV files, then start the interactive menu."""
     load_student_from_csv()
     load_grades_from_csv()
     user_menu()
