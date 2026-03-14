@@ -22,6 +22,7 @@ Built as a personal OOP and CSV practice project.
 - Delete a student and all their associated grades
 - Save/load data across two CSV files for persistence between runs
 - Input validation separated into a dedicated validators.py module
+  including a dedicated non-negative float validator for grade scores
 
 ## Project Structure
 ```
@@ -43,6 +44,7 @@ python student_grade_tracker.py
 - OOP — two classes, private attributes, getter/setter methods
 - CSV module for data persistence across two related files
 - Separated input validation module for clean, reusable code
+- Non-negative float validation for accurate grade score handling
 
 ## Data Persistence
 Student and grade data are automatically saved to their respective 
