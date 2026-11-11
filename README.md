@@ -1,51 +1,63 @@
-# student-grade-tracker-python
+# Python Student Grade Tracker
 
-A Python command-line application to manage students and their grades, 
-built using Object-Oriented Programming (OOP) principles.
-
-## About
-This program allows users to add students and grades, view grade 
-summaries, calculate averages, and delete student records via a 
-console menu. Data is persisted across sessions using two CSV files. 
-Built as a personal OOP and CSV practice project.
+A command-line application for managing student records and numerical grades. Built as a Python practice project, it demonstrates object-oriented programming, relationships between records, filtering, arithmetic summaries and CSV persistence.
 
 ## Features
-- Two classes: Student and Grade with private attributes
-- Auto-incrementing unique IDs for both students and grades
-- Getter and setter methods for all attributes
-- Add a new student
-- Add a grade for a specific student
-- List all students
-- List all grades for a specific student
-- Calculate average grade per student
-- Calculate class average per subject
-- Delete a student and all their associated grades
-- Save/load data across two CSV files for persistence between runs
-- Input validation separated into a dedicated validators.py module
-  including a dedicated non-negative float validator for grade scores
 
-## Project Structure
-```
-student-grade-tracker-python/
-│
-├── student_grade_tracker.py   ← main program
-├── validators.py              ← input validation functions
-├── students_db.csv            ← student records (auto-generated)
-└── grades_db.csv              ← grade records (auto-generated)
-```
+- Add students and list their IDs and names.
+- Record a subject and numerical score for an existing student.
+- List all grade records for a student.
+- Calculate a student's mean across their recorded grades.
+- Calculate a subject's mean across matching grade records.
+- Delete a student and their associated grades.
+- Save students and grades in separate CSV files and load them at startup.
 
-## How to Run
+## Getting started
+
+Python 3 is required. The application uses the standard library and needs no third-party packages.
+
+Download or clone the repository, open a terminal in its root folder, and run:
+
 ```bash
 python student_grade_tracker.py
 ```
 
-## Built With
-- Python 3
-- OOP — two classes, private attributes, getter/setter methods
-- CSV module for data persistence across two related files
-- Separated input validation module for clean, reusable code
-- Non-negative float validation for accurate grade score handling
+Use `python3 student_grade_tracker.py` if your system uses `python3` for Python 3. Running from the repository folder ensures the application uses the included CSV files.
 
-## Data Persistence
-Student and grade data are automatically saved to their respective 
-CSV files after every operation and reloaded on next launch.
+## Example workflow
+
+1. Choose **1** to add a fictional student such as `Alex Example`.
+2. Choose **3** to list students and find their IDs.
+3. Choose **2** to enter the student's ID, a subject such as `Mathematics` and a score.
+4. Choose **4** to inspect that student's grade records.
+5. Choose **5** for the student's mean or **6** for a subject mean.
+6. Choose **0** to exit.
+
+## Score and average semantics
+
+The input helper accepts non-negative numerical scores without enforcing an upper limit. The application does not impose a 0-100 scale, letter grades, pass thresholds or a particular national grading system. Use comparable score scales when interpreting averages.
+
+Each recorded grade receives equal weight. Adding another grade for the same student and subject creates a separate record rather than replacing the previous one. Consequently, the subject mean is calculated across grade records, not across one equally weighted average per student. Subject matching is exact and case-sensitive.
+
+## Structure
+
+| Component | Responsibility |
+|---|---|
+| `Student` | Student ID and name |
+| `Grade` | Grade ID, associated student ID, subject and score |
+| `student_grade_tracker.py` | Classes, menu, record operations, summaries and CSV persistence |
+| `validators.py` | Reusable input helpers |
+| `students_db.csv` | Saved student records |
+| `grades_db.csv` | Saved grade records linked to students by ID |
+
+A student can have multiple grade records. The application checks that a student exists before adding a grade for their ID.
+
+## Persistence
+
+Adding a student writes the student file; adding a grade writes the grade file. Deleting a student removes their associated grades and writes both files. Startup loads the saved records, treating a missing file as an empty collection.
+
+Paths are relative to the working directory. The two CSV files are written separately, without database transactions or automatic backups. This is a local learning application, not a production student-information system.
+
+## Skills demonstrated
+
+Python, classes and encapsulation, related data records, CSV file handling, input validation, filtering, arithmetic aggregation and command-line interaction.
